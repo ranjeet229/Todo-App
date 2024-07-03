@@ -5,21 +5,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  bool? isChecked = false;
   File? imageFile;
   final List<String> _todos = [];
+  final List<String> _filteredTodos = [];
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _searchController.addListener(_filterTodos);
+    _filterTodos();
   }
 
   void _loadData() async {
@@ -29,6 +34,7 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       _todos.addAll(todoList);
+      _filteredTodos.addAll(todoList);
       if (imagePath != null) {
         imageFile = File(imagePath);
       }
@@ -103,6 +109,7 @@ class _HomePageState extends State<HomePage> {
     if (_controller.text.isNotEmpty) {
       setState(() {
         _todos.add(_controller.text);
+        _filteredTodos.add(_controller.text);
         _controller.clear();
         _saveTodos();
       });
@@ -111,8 +118,22 @@ class _HomePageState extends State<HomePage> {
 
   void _removeTodoAt(int index) {
     setState(() {
-      _todos.removeAt(index);
+      _todos.remove(_filteredTodos[index]);
+      _filteredTodos.removeAt(index);
       _saveTodos();
+    });
+  }
+
+  void _filterTodos() {
+    setState(() {
+      if (_searchController.text.isEmpty) {
+        _filteredTodos.clear();
+        _filteredTodos.addAll(_todos);
+      } else {
+        _filteredTodos.clear();
+        _filteredTodos.addAll(_todos.where((todo) =>
+            todo.toLowerCase().contains(_searchController.text.toLowerCase())));
+      }
     });
   }
 
@@ -132,30 +153,20 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        leading: PopupMenuButton<String>(
-          onSelected: (String value) {
-            // Handle menu item selection
-          },
-          itemBuilder: (BuildContext context) {
-            return [
-              const PopupMenuItem<String>(
-                value: 'Profile',
-                child: Text('Profile'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'Settings',
-                child: Text('Settings'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'Logout',
-                child: Text('Logout'),
-              ),
-            ];
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
           },
         ),
         title: const Text(
           'To-Do List',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: Colors.white),
+          style: TextStyle(
+              fontSize: 24, fontWeight: FontWeight.w500, color: Colors.white),
         ),
         centerTitle: true,
         actions: [
@@ -165,7 +176,9 @@ class _HomePageState extends State<HomePage> {
               onTap: _showChangePictureDialog,
               child: CircleAvatar(
                 radius: 20,
-                backgroundImage: imageFile != null ? FileImage(imageFile!) : null,
+                backgroundImage: imageFile != null
+                    ? FileImage(imageFile!)
+                    : null,
                 child: imageFile == null
                     ? Icon(
                   Icons.person,
@@ -177,8 +190,131 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            UserAccountsDrawerHeader(
+              accountName: Text("name"),
+              accountEmail: Text("name@example.com"),
+              currentAccountPicture: GestureDetector(
+                onTap: _showChangePictureDialog,
+                child: CircleAvatar(
+                  backgroundImage:
+                  imageFile != null ? FileImage(imageFile!) : null,
+                  child: imageFile == null
+                      ? Icon(
+                    Icons.person,
+                    size: 30,
+                  )
+                      : null,
+                ),
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text("Profile"),
+              onTap: () {
+                // Handle profile tap
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text("Settings"),
+              onTap: () {
+                // Handle settings tap
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text("Logout"),
+              onTap: () {
+                // Handle logout tap
+              },
+            ),
+          ],
+        ),
+      ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search_rounded),
+                hintText: 'Search here',
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 20,),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "All ToDo's",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16,),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _filteredTodos.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 4.0, horizontal: 16.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: CheckboxListTile(
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(
+                      _filteredTodos[index],
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    value: isChecked ?? false,
+                    activeColor: Colors.blue,
+                    onChanged: (newBool) {
+                      setState(() {
+                        isChecked = newBool;
+                      });
+                    },
+                    secondary: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.delete),
+                        color: Colors.white,
+                        onPressed: () => _removeTodoAt(index),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -187,7 +323,7 @@ class _HomePageState extends State<HomePage> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: 'Enter a task',
+                      hintText: 'Add a new todo item',
                       filled: true,
                       fillColor: Colors.grey.shade100,
                       border: OutlineInputBorder(
@@ -198,36 +334,18 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  color: Color(0xFF50E3C2),
-                  onPressed: _addTodo,
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _todos.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
-                  shape: RoundedRectangleBorder(
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFF4A90E2), // Blue color
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: ListTile(
-                    title: Text(
-                      _todos[index],
-                      style: const TextStyle(color: Colors.black87),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      color: Color(0xFF4A90E2),
-                      onPressed: () => _removeTodoAt(index),
-                    ),
+                  child: IconButton(
+                    icon: const Icon(Icons.add),
+                    color: Colors.white, // White icon color
+                    onPressed: _addTodo,
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
         ],
