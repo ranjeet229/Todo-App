@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "596421310346",
+    "project_id": "audio-f6dc0",
+    "storage_bucket": "audio-f6dc0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596421310346:android:d0f20ebd1b90de34ae7a73",
+        "android_client_info": {
+          "package_name": "com.example.audio_player"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRvFAuOI1YeTXRlJ0rECthwwuHkkaLoss"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596421310346:android:b950a34d05887aa9ae7a73",
+        "android_client_info": {
+          "package_name": "com.example.todo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRvFAuOI1YeTXRlJ0rECthwwuHkkaLoss"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
