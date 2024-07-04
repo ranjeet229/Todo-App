@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
+import 'package:todo_app/pages/profile%20page.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -12,12 +14,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool? isChecked = false;
   File? imageFile;
   final List<String> _todos = [];
   final List<String> _filteredTodos = [];
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final Map<String, bool> _checkedItems = {};
 
   @override
   void initState() {
@@ -80,25 +82,36 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return Container(
           height: 150,
-          child: Column(
-            children: [
-              ListTile(
-                leading: Icon(Icons.photo_library),
-                title: Text('Choose from gallery'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  selectImage(ImageSource.gallery);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_camera),
-                title: Text('Take a photo'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  selectImage(ImageSource.camera);
-                },
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.photo_library),
+                  title: Text('View image'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showImageDialog();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.photo_library),
+                  title: Text('Choose from gallery'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    selectImage(ImageSource.gallery);
+                  },
+                ),
+            
+                ListTile(
+                  leading: Icon(Icons.photo_camera),
+                  title: Text('Take a photo'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    selectImage(ImageSource.camera);
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -110,6 +123,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _todos.add(_controller.text);
         _filteredTodos.add(_controller.text);
+        _checkedItems[_controller.text] = false;
         _controller.clear();
         _saveTodos();
       });
@@ -118,8 +132,10 @@ class _HomePageState extends State<HomePage> {
 
   void _removeTodoAt(int index) {
     setState(() {
-      _todos.remove(_filteredTodos[index]);
+      String todo = _filteredTodos[index];
+      _todos.remove(todo);
       _filteredTodos.removeAt(index);
+      _checkedItems.remove(todo);
       _saveTodos();
     });
   }
@@ -137,6 +153,35 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _showImageDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Container(
+            height: 300,
+            width: 300,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: imageFile != null
+                  ? Image.file(
+                imageFile!,
+                fit: BoxFit.cover,
+              )
+                  : Icon(
+                Icons.person,
+                size: 100,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,16 +197,6 @@ class _HomePageState extends State<HomePage> {
               end: Alignment.bottomRight,
             ),
           ),
-        ),
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
         ),
         title: const Text(
           'To-Do List',
@@ -189,58 +224,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: Text("name"),
-              accountEmail: Text("name@example.com"),
-              currentAccountPicture: GestureDetector(
-                onTap: _showChangePictureDialog,
-                child: CircleAvatar(
-                  backgroundImage:
-                  imageFile != null ? FileImage(imageFile!) : null,
-                  child: imageFile == null
-                      ? Icon(
-                    Icons.person,
-                    size: 30,
-                  )
-                      : null,
-                ),
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text("Profile"),
-              onTap: () {
-                // Handle profile tap
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text("Settings"),
-              onTap: () {
-                // Handle settings tap
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text("Logout"),
-              onTap: () {
-                // Handle logout tap
-              },
-            ),
-          ],
-        ),
       ),
       body: Column(
         children: [
@@ -278,6 +261,7 @@ class _HomePageState extends State<HomePage> {
             child: ListView.builder(
               itemCount: _filteredTodos.length,
               itemBuilder: (context, index) {
+                String todo = _filteredTodos[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(
                       vertical: 4.0, horizontal: 16.0),
@@ -287,14 +271,14 @@ class _HomePageState extends State<HomePage> {
                   child: CheckboxListTile(
                     controlAffinity: ListTileControlAffinity.leading,
                     title: Text(
-                      _filteredTodos[index],
+                      todo,
                       style: const TextStyle(color: Colors.black87),
                     ),
-                    value: isChecked ?? false,
+                    value: _checkedItems[todo] ?? false,
                     activeColor: Colors.blue,
                     onChanged: (newBool) {
                       setState(() {
-                        isChecked = newBool;
+                        _checkedItems[todo] = newBool!;
                       });
                     },
                     secondary: Container(
