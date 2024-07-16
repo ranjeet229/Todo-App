@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/pages/Splash_Screen.dart';
-import 'package:todo_app/pages/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
-void main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+import 'package:todo_app/workout%20app/welocme_View.dart';
+void main() {
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: SplashScreen(),
+      home: WelcomeView(),
     );
   }
 }

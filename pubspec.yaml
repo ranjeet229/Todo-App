@@ -42,6 +42,8 @@ dependencies:
   cloud_firestore: ^5.0.2
   firebase_storage: ^12.1.0
   shared_preferences: ^2.2.3
+  google_fonts: ^6.2.1
+  flutter_rating_bar: ^4.0.0
 
 
 
@@ -52,7 +54,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icons/playstore.png"
+  image_path: "assets/icons/workout.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
