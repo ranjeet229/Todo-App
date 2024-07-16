@@ -253,7 +253,6 @@ class _DescriptionPageState extends State<DescriptionPage> {
                   ],
                 ),
               ),
-              // Here you can add the content for each tab based on selectedTab
               if (selectedTab == TabItem.description) ...[
                 SizedBox(height: 20),
                 // Replace with your description content widget
@@ -267,7 +266,6 @@ class _DescriptionPageState extends State<DescriptionPage> {
               ],
               if (selectedTab == TabItem.feedback) ...[
                 SizedBox(height: 20),
-                // Replace with your feedback content widget
                 Text(
                   "Feedback ",
                   style: TextStyle(color: Colors.white),
@@ -275,7 +273,6 @@ class _DescriptionPageState extends State<DescriptionPage> {
               ],
               if (selectedTab == TabItem.related) ...[
                 SizedBox(height: 20),
-                // Replace with your related content widget
                 Text(
                   "Related ",
                   style: TextStyle(color: Colors.white),
